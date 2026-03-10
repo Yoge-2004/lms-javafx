@@ -1,81 +1,109 @@
 # LMSJavaFX
 
-Welcome to **LMSJavaFX** — a Library Management System built with JavaFX. This project demonstrates best practices in Java development, featuring a clean codebase, modular design, and a user-friendly GUI for library management.
+A desktop Library Management System (LMS) built with JavaFX. It provides a clean GUI for managing books, users, and issue/return workflows.
 
-## 📦 Repository Overview
+## Highlights
 
-- **Language:** Java (100%)
-- **Owner:** [Yoge-2004](https://github.com/Yoge-2004)
-- **Purpose:** A JavaFX-based Library Management System for managing books, users, and transactions efficiently.
+- JavaFX desktop UI with modern layout and responsive panels
+- Book catalog management with add/update/delete actions
+- User management with registration and profile details
+- Issue/return workflow with due-date tracking
+- Search and filtering for quick lookup
+- Role-based login for librarian access
 
-## 🚀 Features
+## Screenshots
 
-- Modern JavaFX-based GUI
-- Manage books, members, and library staff
-- Book issue and return management
-- Search and filter books and users
-- User authentication and role-based access
-- Comprehensive documentation and code comments
+**Login Screen**  
+Clean sign-in experience for staff access with basic validation and feedback.
 
-## 🖼️ Project Screenshots
-
-<!-- Add images relevant to your project below. Replace image1.png with your actual image filename or URL. -->
 ![Login Screen](assets/screenshots/login.png)
-![Dashboard](assets/screenshots/dashboard.png)
-![Issued Books](assets/screenshots/dashboard_books_issued.png)
-<!-- Add more images as needed -->
 
-## 📂 Directory Structure
+**Main Dashboard**  
+Central workspace with navigation, quick actions, and status information for daily operations.
+
+![Dashboard](assets/screenshots/dashboard.png)
+
+**Issued Books View**  
+Focused view of issued items with return and user actions.
+
+![Issued Books](assets/screenshots/dashboard_books_issued.png)
+
+## Features (Detailed)
+
+- Authentication
+  Staff login with validation and feedback.
+- Book Management
+  Add new titles, edit metadata, delete records, and track availability.
+- User Management
+  Register new users, view user details, and manage basic profiles.
+- Issuing Workflow
+  Issue books to users, return books, and view current issue records.
+- Search And Filters
+  Search by key fields and filter lists to find items quickly.
+- Data Persistence
+  Uses serialized data files in `data/` for local storage.
+
+## Requirements
+
+- JDK 25
+- Internet access on first build (downloads Maven dependencies)
+
+## Project Layout
 
 ```
 LMSJavaFX/
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   └── test/
+│   └── main/
+│       └── java/
+│           └── com/example/...
+├── data/
+│   └── *.ser
 ├── assets/
 │   └── screenshots/
-├── README.md
-├── .gitignore
-└── [other files...]
+├── pom.xml
+└── README.md
 ```
 
-## 🛠️ Getting Started
+## Run In IDE (Run Button)
 
-To run or edit the code locally:
+Import the project as Maven, then:
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Yoge-2004/LMSJavaFX.git
-   cd LMSJavaFX
-   ```
+- Run `com.example.application.LibraryApp` from the IDE, or
+- Run the Maven goal `javafx:run`
 
-2. **Open in your favorite IDE**  
-   Recommended: IntelliJ IDEA, Eclipse, or VSCode with Java and JavaFX extensions.
+If the IDE complains about missing JavaFX runtime, use `javafx:run`. It sets up the JavaFX module path automatically.
 
-3. **Build and run**
-   - Using Maven:  
-     ```bash
-     mvn clean install
-     mvn javafx:run
-     ```
-   - Or open and run directly in your IDE.
+## Build A Windows App Image (Recommended)
 
-## 📖 Documentation
+This creates a self-contained app image that runs on Windows without requiring JavaFX to be installed:
 
-Each module and class is documented with Javadoc comments. Refer to the inline documentation and the `/docs` folder for detailed usage.
+```powershell
+.\mvnw -q -DskipTests package -Pwindows
+```
 
-## 🤝 Contributing
+Run the app from:
 
-Contributions are welcome! Please open a pull request or issue for suggestions or bug reports.
+`target\installer\LibraryApp\LibraryApp.exe`
 
-## 📄 License
+Distribute the whole folder:
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for more information.
+`target\installer\LibraryApp\`
 
-## 🙋‍♂️ Author
+## Data Files
 
-- **Yoge-2004** — [GitHub Profile](https://github.com/Yoge-2004)
+The app stores data in `data/` using serialized `.ser` files. Keep this folder next to the app when distributing.
 
----
+## Troubleshooting
+
+- JavaFX runtime error when running a jar:
+  Use the app image built by `jpackage` (see above). A plain `java -jar` does not bundle JavaFX native runtime.
+- Maven not found:
+  Use the Maven Wrapper provided in this repo: `.\mvnw`.
+
+## License
+
+MIT License. See `LICENSE`.
+
+## Author
+
+Yogeshwaran
