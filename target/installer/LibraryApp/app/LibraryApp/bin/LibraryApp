@@ -1,4 +1,3 @@
-#!/bin/sh
-JLINK_VM_OPTIONS="--enable-native-access=javafx.graphics"
-DIR=`dirname $0`
-$DIR/java $JLINK_VM_OPTIONS -m com.example.application/com.example.application.LibraryApp "$@"
+version https://git-lfs.github.com/spec/v1
+oid sha256:a5ef70b2c0ca5f0a1edccaa610654f6b848edae54770181bd2b9d35c041df93f
+size 180

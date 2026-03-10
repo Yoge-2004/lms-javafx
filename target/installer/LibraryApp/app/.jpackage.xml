@@ -1,5 +1,3 @@
-<?xml version="1.0" ?>
-<jpackage-state version="25.0.2" platform="windows">
-  <app-version>1.0.0</app-version>
-  <main-launcher>LibraryApp</main-launcher>
-  <main-class>com.example.application.LibraryApp</main-class></jpackage-state>
+version https://git-lfs.github.com/spec/v1
+oid sha256:a74a296c8b42c57bcdcf360631429e4f3290e63fed59a9f0eb7481a124d7b4af
+size 233

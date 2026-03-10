@@ -1,6 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="maven-antrun-" default="main">
-  <target name="main">
-    <delete failonerror="false" dir="D:\Projects\lms-javafx\target/installer/LibraryApp" />
-  </target>
-</project>
+version https://git-lfs.github.com/spec/v1
+oid sha256:fbe9bff438a98b733cc303e7963d59f4956516d1685247b2f07afe400b872920
+size 223

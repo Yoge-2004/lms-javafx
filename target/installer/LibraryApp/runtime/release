@@ -1,2 +1,3 @@
-JAVA_VERSION="25.0.2"
-MODULES="java.base java.logging java.datatransfer java.xml java.prefs java.desktop javafx.base jdk.unsupported javafx.graphics javafx.controls java.scripting javafx.fxml com.example.application"
+version https://git-lfs.github.com/spec/v1
+oid sha256:0c3966c1125e0323ef91af1027d951a410b3239af0635c233030a349a68d52b2
+size 217
