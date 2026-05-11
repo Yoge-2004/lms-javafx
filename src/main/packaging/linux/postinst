@@ -1,0 +1,34 @@
+#!/bin/sh
+# Post-install script: installs the app icon into the XDG hicolor icon theme
+# so the compositor (GNOME Shell, KDE Plasma, etc.) can find it by name.
+# This runs as root after the package is installed.
+
+ICON_SRC="/opt/libraryos/lib/LibraryOS.png"
+BIN_SRC="/opt/libraryos/bin/LibraryOS"
+
+# Create symlink in /usr/bin for terminal access
+ln -sf "$BIN_SRC" /usr/bin/libraryos
+
+
+for SIZE in 512x512 256x256 128x128 64x64 48x48 32x32; do
+    DIR="/usr/share/icons/hicolor/${SIZE}/apps"
+    mkdir -p "$DIR"
+    cp "$ICON_SRC" "$DIR/libraryos.png"
+done
+
+# Refresh icon caches
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor/ 2>/dev/null || true
+fi
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+    # Explicitly link the desktop entry if jpackage didn't do it automatically
+    DESKTOP_SRC="/opt/libraryos/lib/libraryos-LibraryOS.desktop"
+    if [ -f "$DESKTOP_SRC" ]; then
+        ln -sf "$DESKTOP_SRC" /usr/share/applications/libraryos.desktop
+    fi
+
+    update-desktop-database /usr/share/applications/ 2>/dev/null || true
+fi
+
+exit 0

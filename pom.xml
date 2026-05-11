@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>library-os</artifactId>
+    <version>3.4.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.release>26</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.version>26</javafx.version>
+        <main.class>com.example.Main</main.class>
+    </properties>
+
+    <dependencies>
+        <!-- JavaFX -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <!-- Jakarta Mail for email reminders
+             Migrated from com.sun.mail:jakarta.mail (CVE-2025-7962) to the
+             official Eclipse Angus successor which contains the fix. -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+
+        <!-- Jakarta Activation: provides javamail.default.address.map resource
+             Migrated from com.sun.activation to the Eclipse Angus successor. -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+
+        <!-- ── Database JDBC drivers (all optional at runtime via reflection) ── -->
+
+        <!-- SQLite — embedded, zero-config, ideal default -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+        </dependency>
+
+        <!-- MySQL / MariaDB — updated from 9.0.0 (CVE-2025-30706) -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.3.0</version>
+        </dependency>
+
+        <!-- PostgreSQL — updated from 42.7.3 (CVE-2026-42198 PBKDF2 DoS) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.11</version>
+        </dependency>
+
+        <!-- MongoDB (sync driver) — updated to pull in patched protobuf transitive -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+
+        <!-- Explicit protobuf override: forces the patched version that fixes
+             CVE-2024-7254 (input validation / DoS in older protobuf-java).
+             mongodb-driver-sync pulls this in transitively; pinning it here
+             ensures Maven resolves the safe version regardless of transitive depth. -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>4.28.3</version>
+        </dependency>
+
+        <!-- Oracle JDBC (available on Maven Central) -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>23.4.0.24.05</version>
+        </dependency>
+
+        <!-- JUnit 5 for tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- SLF4J Simple Binding: Fixes "Failed to load class StaticLoggerBinder" warning -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <release>26</release>
+                    <!-- Enable all lint checks except the ones that are environment-specific:
+                         - path: warns about missing classpath entries (MongoDB jars) — not a bug
+                         - processing: annotation processor warnings — not relevant here
+                         All other [serial], [unchecked], [cast], [deprecation] warnings are
+                         properly fixed in source rather than suppressed. -->
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <arg>-Xlint:-path</arg>
+                        <arg>-Xlint:-processing</arg>
+                        <!-- Treat warnings as informational during build — packaging must succeed
+                             even if the local environment is missing optional jars (MongoDB).
+                             Remove this arg to make warnings fail the build in CI. -->
+                        <arg>-Xlint:-options</arg>
+                    </compilerArgs>
+                    <showWarnings>true</showWarnings>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+
+            <!-- JavaFX runner: mvn javafx:run -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                    <options>
+                        <!-- Suppresses "restricted method" warning from JavaFX native loader -->
+                        <option>--enable-native-access=javafx.graphics</option>
+                    </options>
+                </configuration>
+            </plugin>
+
+            <!-- Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Suite*.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- JAR plugin for standalone execution -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <!-- Fat JAR with all dependencies (required input for jpackage) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>library-os-full</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-fat-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>single</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <!-- Include theme.css and app icon from resources -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.css</include>
+                    <include>**/*.svg</include>
+                    <include>**/*.png</include>
+                    <include>META-INF/**</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+    <!-- Ensure exec-maven-plugin is resolvable even in restricted corporate repos -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!--
+    ══════════════════════════════════════════════════════════════════
+      INSTALLER PROFILES  —  build with: mvn package -Dinstaller
+      Place icon files at:
+        Windows  →  src/main/packaging/icons/app-icon.ico   (Multi-res up to 256x256)
+        macOS    →  src/main/packaging/icons/app-icon.icns  (Multi-res up to 1024x1024)
+        Linux    →  src/main/packaging/icons/app-icon.png   (1024x1024 .png)
+      jpackage ships with JDK 14+ — no extra install needed.
+    ══════════════════════════════════════════════════════════════════
+    -->
+    <profiles>
+
+        <!-- ── Windows → .exe ─────────────────────────────────────── -->
+        <profile>
+            <id>installer-windows</id>
+            <activation>
+                <os><family>windows</family></os>
+                <property><name>installer</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-windows</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>library-os-full.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--name</argument>
+                                        <argument>LibraryOS</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Library OS</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/installer</argument>
+                                        <argument>--type</argument>
+                                        <argument>exe</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/packaging/icons/app-icon.ico</argument>
+                                        <argument>--win-dir-chooser</argument>
+                                        <argument>--win-menu</argument>
+                                        <argument>--win-shortcut</argument>
+                                        <argument>--java-options</argument>
+                                        <argument>--enable-native-access=javafx.graphics</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ── macOS → .dmg ───────────────────────────────────────── -->
+        <profile>
+            <id>installer-mac</id>
+            <activation>
+                <os><family>mac</family></os>
+                <property><name>installer</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-mac</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>library-os-full.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--name</argument>
+                                        <argument>LibraryOS</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Library OS</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/installer</argument>
+                                        <argument>--type</argument>
+                                        <argument>dmg</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/packaging/icons/app-icon.icns</argument>
+                                        <argument>--java-options</argument>
+                                        <argument>--enable-native-access=javafx.graphics</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ── Linux → .deb + .rpm ────────────────────────────────── -->
+        <profile>
+            <id>installer-linux</id>
+            <activation>
+                <os><family>unix</family></os>
+                <property><name>installer</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-linux-packaging-resources</id>
+                                <phase>validate</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Preparing unified Linux packaging resources..."/>
+                                        <mkdir dir="${project.build.directory}/linux-packaging"/>
+                                        <copy todir="${project.build.directory}/linux-packaging">
+                                            <fileset dir="${project.basedir}/src/main/packaging/linux"/>
+                                        </copy>
+                                        <!-- Create 'post' alias for RPM from the canonical 'postinst' script -->
+                                        <copy file="${project.basedir}/src/main/packaging/linux/postinst"
+                                              tofile="${project.build.directory}/linux-packaging/post"
+                                              overwrite="true"/>
+                                        <!-- Create 'preun' alias for RPM from the canonical 'prerm' script -->
+                                        <copy file="${project.basedir}/src/main/packaging/linux/prerm"
+                                              tofile="${project.build.directory}/linux-packaging/preun"
+                                              overwrite="true"/>
+
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-deb</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>library-os-full.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--name</argument>
+                                        <argument>LibraryOS</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Library OS</argument>
+                                        <argument>--description</argument>
+                                        <argument>Professional Library Management System</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/installer</argument>
+                                        <argument>--type</argument>
+                                        <argument>deb</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/packaging/icons/app-icon.png</argument>
+                                        <argument>--linux-shortcut</argument>
+                                        <argument>--linux-menu-group</argument>
+                                        <argument>Office;Database;Education</argument>
+                                        <argument>--linux-deb-maintainer</argument>
+                                        <argument>Library OS Team</argument>
+                                        <!-- resource-dir: Now points to the target folder where we prepared both postinst and post -->
+                                        <argument>--resource-dir</argument>
+                                        <argument>${project.build.directory}/linux-packaging</argument>
+                                        <argument>--java-options</argument>
+                                        <argument>--enable-native-access=javafx.graphics</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jpackage-rpm</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>library-os-full.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--name</argument>
+                                        <argument>LibraryOS</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Library OS</argument>
+                                        <argument>--description</argument>
+                                        <argument>Professional Library Management System</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/installer</argument>
+                                        <argument>--type</argument>
+                                        <argument>rpm</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/packaging/icons/app-icon.png</argument>
+                                        <argument>--linux-shortcut</argument>
+                                        <argument>--linux-menu-group</argument>
+                                        <argument>Office;Database;Education</argument>
+                                        <argument>--resource-dir</argument>
+                                        <argument>${project.build.directory}/linux-packaging</argument>
+                                        <argument>--java-options</argument>
+                                        <argument>--enable-native-access=javafx.graphics</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+</project>

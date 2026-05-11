@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pre-remove script: cleans up symlinks created during installation
+
+# Remove terminal symlink
+if [ -L /usr/bin/libraryos ]; then
+    rm /usr/bin/libraryos
+fi
+
+# Remove desktop entry symlink
+if [ -L /usr/share/applications/libraryos.desktop ]; then
+    rm /usr/share/applications/libraryos.desktop
+fi
+
+# Refresh desktop database
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database /usr/share/applications/ 2>/dev/null || true
+fi
+
+exit 0

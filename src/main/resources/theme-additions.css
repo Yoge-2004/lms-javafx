@@ -1,0 +1,646 @@
+/*
+ * theme-additions.css   Library OS comprehensive theme supplement
+ * 
+ * Place in src/main/resources/ and add to the TOP of theme.css:
+ *   @import "theme-additions.css";
+ *
+ * What this fixes:
+ *   1. Spinner arrows: pure CSS triangles  no glyph font needed.
+ *   2. Dark mode: EVERY control gets light text on dark background.
+ *      Nothing looks invisible. Icons are bright. Arrows are bright.
+ *   3. Light mode: sidebar text / section headers have proper contrast.
+ *   4. Alert / Dialog white body fully replaced in dark mode.
+ *   5. ComboBox popup (library selector) styled for both modes.
+ *   6. Responsive metric cards  no fixed pixel widths.
+ */
+
+
+/* 
+   SPINNER  sharp triangles via -fx-shape, works in any theme.
+   The container is transparent so Modena's default multi-layer
+   background doesn't leak as black rounded corners.
+    */
+
+.themed-spinner {
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.themed-spinner .text-field {
+    -fx-alignment: center-right;
+    -fx-padding: 10 14;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+
+.themed-spinner .increment-arrow-button,
+.themed-spinner .decrement-arrow-button {
+    -fx-background-color: #0D9488;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-cursor: hand;
+}
+
+.themed-spinner .increment-arrow-button {
+    -fx-background-radius: 0 10 0 0;
+    -fx-border-radius: 0 10 0 0;
+    -fx-padding: 9 10 5 10;
+}
+
+.themed-spinner .decrement-arrow-button {
+    -fx-background-radius: 0 0 10 0;
+    -fx-border-radius: 0 0 10 0;
+    -fx-padding: 5 10 9 10;
+}
+
+.themed-spinner .increment-arrow-button .increment-arrow {
+    -fx-background-color: white;
+    -fx-padding: 3 4 3 4;
+    -fx-shape: "M 0 -3.5 L 4 3.5 L -4 3.5 Z";
+}
+
+.themed-spinner .decrement-arrow-button .decrement-arrow {
+    -fx-background-color: white;
+    -fx-padding: 3 4 3 4;
+    -fx-shape: "M 0 3.5 L 4 -3.5 L -4 -3.5 Z";
+}
+
+.themed-spinner .increment-arrow-button:hover,
+.themed-spinner .decrement-arrow-button:hover {
+    -fx-background-color: #0F766E;
+}
+
+.themed-spinner .increment-arrow-button:pressed,
+.themed-spinner .decrement-arrow-button:pressed {
+    -fx-background-color: #115E59;
+}
+
+
+/* 
+   LIGHT MODE  sidebar contrast
+   The sidebar background is always dark (#0F172A  #1A2942).
+   These rules use `.sidebar .classname` (specificity 0,2,0) so they
+   beat the generic `.label { -fx-text-fill: #374151 }` rule in
+   theme.css  which also has specificity 0,1,0 but appears later and
+   would otherwise win and render sidebar labels invisible.
+    */
+
+.sidebar .sidebar-logo         { -fx-text-fill: #F8FAFC; -fx-font-weight: 800; -fx-font-family: system; -fx-font-smoothing-type: lcd; }
+.sidebar .sidebar-logo-accent  { -fx-text-fill: #14B8A6; }
+.sidebar .sidebar-section-label {
+    -fx-text-fill: #B0BEC5;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 0 4 8;
+    -fx-opacity: 1;
+    -fx-font-family: system;
+}
+.sidebar .sidebar-btn          { -fx-text-fill: #E0E0E0; -fx-font-family: system; }
+.sidebar .sidebar-btn .label   { -fx-text-fill: #E0E0E0; -fx-font-family: system; }
+.sidebar .sidebar-btn:hover    { -fx-background-color: rgba(20,184,166,0.15); -fx-text-fill: #14B8A6; }
+.sidebar .sidebar-btn:hover .label { -fx-text-fill: #14B8A6; }
+.sidebar .sidebar-btn.active   { -fx-background-color: rgba(20,184,166,0.22); -fx-text-fill: #14B8A6; }
+.sidebar .sidebar-btn.active .label { -fx-text-fill: #14B8A6; }
+.sidebar .sidebar-profile-name { -fx-text-fill: #FFFFFF; -fx-font-size: 14px; -fx-font-weight: 700; -fx-font-family: system; }
+.sidebar .sidebar-profile-role { -fx-text-fill: #B0BEC5; -fx-font-size: 12px; -fx-font-family: system; }
+.sidebar .label                { -fx-text-fill: #E0E0E0; -fx-font-family: system; }
+
+/* Global border fix for eye icons */
+.password-toggle, .auth-password-toggle, .btn-ghost {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+}
+
+/* Also keep the old standalone selectors for any sidebar items rendered outside
+   the .sidebar container (e.g. during a theme rebuild transition) */
+.sidebar-logo         { -fx-text-fill: #F8FAFC; -fx-font-weight: 800; }
+.sidebar-logo-accent  { -fx-text-fill: #0D9488; }
+.sidebar-section-label {
+    -fx-text-fill: #B0BEC5;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 0 4 8;
+}
+.sidebar-profile-name { -fx-text-fill: #F8FAFC; -fx-font-size: 14px; -fx-font-weight: 600; }
+.sidebar-profile-role { -fx-text-fill: #CBD5E1; -fx-font-size: 12px; }
+
+
+/* 
+   DARK MODE  sidebar
+    */
+
+.dark-mode .sidebar .sidebar-logo         { -fx-text-fill: #F1F5F9; }
+.dark-mode .sidebar .sidebar-logo-accent  { -fx-text-fill: #14B8A6; }
+.dark-mode .sidebar .sidebar-section-label { -fx-text-fill: #94A3B8; }
+.dark-mode .sidebar .sidebar-profile-name  { -fx-text-fill: #FFFFFF; }
+.dark-mode .sidebar .sidebar-profile-role  { -fx-text-fill: #CBD5E1; }
+/* Fallbacks */
+.dark-mode .sidebar-logo         { -fx-text-fill: #F1F5F9; }
+.dark-mode .sidebar-logo-accent  { -fx-text-fill: #14B8A6; }
+.dark-mode .sidebar-section-label { -fx-text-fill: #94A3B8; }
+.dark-mode .sidebar-profile-name  { -fx-text-fill: #F1F5F9; }
+.dark-mode .sidebar-profile-role  { -fx-text-fill: #94A3B8; }
+
+
+/* 
+   DARK MODE  SVG icons: must be light to show on dark backgrounds
+    */
+
+.dark-mode .icon-svg { -fx-fill: #CBD5E1; }
+.dark-mode .btn-primary .icon-svg  { -fx-fill: white; }
+.dark-mode .btn-success .icon-svg  { -fx-fill: white; }
+.dark-mode .btn-warning .icon-svg  { -fx-fill: white; }
+.dark-mode .btn-danger  .icon-svg  { -fx-fill: white; }
+.btn-primary .icon-svg { -fx-fill: white; }
+.btn-success .icon-svg { -fx-fill: white; }
+.btn-warning .icon-svg { -fx-fill: white; }
+.btn-danger  .icon-svg { -fx-fill: white; }
+
+
+/* 
+   DARK MODE  Dialog / Alert pane (all nodes in hierarchy)
+    */
+
+.dark-mode .dialog-pane,
+.dark-mode.dialog-pane {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-border-width: 1;
+}
+
+.dark-mode .dialog-pane > .header-panel,
+.dark-mode.dialog-pane > .header-panel {
+    -fx-background-color: #0F172A;
+    -fx-padding: 16 24;
+}
+
+.dark-mode .dialog-pane > .header-panel > .label,
+.dark-mode.dialog-pane > .header-panel > .label {
+    -fx-text-fill: #F8FAFC;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.dark-mode .dialog-pane > .header-panel > .graphic-container,
+.dark-mode.dialog-pane > .header-panel > .graphic-container {
+    -fx-background-color: #0F172A;
+}
+
+.dark-mode .dialog-pane > .content,
+.dark-mode.dialog-pane > .content {
+    -fx-background-color: #1E293B;
+    -fx-padding: 16 24;
+}
+
+.dark-mode .dialog-pane > .content > .label,
+.dark-mode.dialog-pane > .content > .label {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 14px;
+}
+
+.dark-mode .dialog-pane > .button-bar,
+.dark-mode.dialog-pane > .button-bar {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 20;
+}
+
+.dark-mode .dialog-pane > .button-bar > .container,
+.dark-mode.dialog-pane > .button-bar > .container {
+    -fx-background-color: transparent;
+}
+
+.dark-mode .dialog-pane-modern { -fx-background-color: #1E293B; }
+
+
+/* 
+   DARK MODE  catch-all Label
+    */
+
+.dark-mode .label { -fx-text-fill: #F8FAFC; }
+
+/* Prevent .dark-mode .label from turning colored-button labels gray */
+.dark-mode .btn-primary .label,
+.dark-mode .app-button.btn-primary .label  { -fx-text-fill: white; }
+.dark-mode .btn-success .label,
+.dark-mode .app-button.btn-success .label  { -fx-text-fill: white; }
+.dark-mode .btn-warning .label,
+.dark-mode .app-button.btn-warning .label  { -fx-text-fill: white; }
+.dark-mode .btn-danger  .label,
+.dark-mode .app-button.btn-danger  .label  { -fx-text-fill: white; }
+
+/* 
+   DARK MODE  richer color palette for metric/stat cards
+   Uses indigo, violet, amber accents to break the all-green look
+    */
+
+.dark-mode .metric-card {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #1E293B, #192236);
+    -fx-border-color: #334155;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 4);
+}
+.dark-mode .metric-card:hover {
+    -fx-border-color: #475569;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 20, 0, 0, 6);
+}
+
+
+/* 
+   DARK MODE  TextField / PasswordField / TextArea
+   background-insets: 0 prevents Modena's inner highlight layer
+   from creating a second visible border ring.
+    */
+
+.dark-mode .text-field,
+.dark-mode .password-field,
+.dark-mode .text-area {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #475569;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-text-fill: #F1F5F9;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.dark-mode .text-field:focused,
+.dark-mode .password-field:focused {
+    -fx-border-color: #0D9488;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(13,148,136,0.3), 6, 0, 0, 0);
+}
+
+.dark-mode .text-area .content {
+    -fx-background-color: #0F172A;
+    -fx-text-fill: #F1F5F9;
+}
+
+
+/* 
+   DARK MODE  ComboBox
+    */
+
+.dark-mode .combo-box,
+.dark-mode .combo-box-base {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #475569;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+
+.dark-mode .combo-box .list-cell,
+.dark-mode .combo-box-base .list-cell { -fx-text-fill: #F1F5F9; -fx-background-color: transparent; }
+.dark-mode .combo-box .arrow-button   { -fx-background-color: transparent; }
+.dark-mode .combo-box .arrow          { -fx-background-color: #94A3B8; }
+
+.dark-mode .combo-box-popup .list-view {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 14, 0, 0, 4);
+}
+
+.dark-mode .combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #CBD5E1;
+    -fx-padding: 9 14;
+    -fx-font-size: 14px;
+}
+
+.dark-mode .combo-box-popup .list-view .list-cell:hover   { -fx-background-color: #334155; -fx-text-fill: #F8FAFC; }
+.dark-mode .combo-box-popup .list-view .list-cell:selected { -fx-background-color: rgba(13,148,136,0.25); -fx-text-fill: #14B8A6; }
+
+
+/* 
+   DARK MODE  Spinner (both .spinner and .themed-spinner)
+   Container is transparent; only the text-field and buttons have
+   visible backgrounds/borders. This eliminates double borders.
+    */
+
+.dark-mode .spinner,
+.dark-mode .themed-spinner {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.dark-mode .spinner .text-field,
+.dark-mode .themed-spinner .text-field {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10 0 0 10;
+    -fx-background-radius: 10 0 0 10;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-text-fill: #F1F5F9;
+    -fx-font-size: 14px;
+    -fx-padding: 10 14;
+}
+
+.dark-mode .spinner .increment-arrow-button,
+.dark-mode .spinner .decrement-arrow-button,
+.dark-mode .themed-spinner .increment-arrow-button,
+.dark-mode .themed-spinner .decrement-arrow-button {
+    -fx-background-color: #14B8A6;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-cursor: hand;
+}
+
+.dark-mode .spinner .increment-arrow-button:hover,
+.dark-mode .spinner .decrement-arrow-button:hover,
+.dark-mode .themed-spinner .increment-arrow-button:hover,
+.dark-mode .themed-spinner .decrement-arrow-button:hover {
+    -fx-background-color: #0D9488;
+}
+
+/* HIGH-CONTRAST ARROWS  white on teal */
+.dark-mode .spinner .increment-arrow-button .increment-arrow,
+.dark-mode .spinner .decrement-arrow-button .decrement-arrow,
+.dark-mode .themed-spinner .increment-arrow-button .increment-arrow,
+.dark-mode .themed-spinner .decrement-arrow-button .decrement-arrow {
+    -fx-background-color: white;
+}
+
+.dark-mode .themed-spinner .increment-arrow-button .increment-arrow {
+    -fx-shape: "M 0 -3.5 L 4 3.5 L -4 3.5 Z";
+    -fx-padding: 3 4 3 4;
+}
+
+.dark-mode .themed-spinner .decrement-arrow-button .decrement-arrow {
+    -fx-shape: "M 0 3.5 L 4 -3.5 L -4 -3.5 Z";
+    -fx-padding: 3 4 3 4;
+}
+
+
+/* 
+   DARK MODE  Buttons inside dialogs
+    */
+
+.dark-mode .dialog-pane .button,
+.dark-mode.dialog-pane .button {
+    -fx-background-color: #334155;
+    -fx-text-fill: #E2E8F0;
+    -fx-border-color: #475569;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.dark-mode .dialog-pane .button:hover,
+.dark-mode.dialog-pane .button:hover { -fx-background-color: #475569; -fx-text-fill: #F8FAFC; }
+
+.dark-mode .dialog-pane .button.btn-primary,
+.dark-mode.dialog-pane .button.btn-primary {
+    -fx-background-color: linear-gradient(to bottom right,#14B8A6,#0D9488);
+    -fx-text-fill: white; -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian,rgba(13,148,136,0.35),8,0,0,2);
+}
+.dark-mode .dialog-pane .button.btn-primary:hover,
+.dark-mode.dialog-pane .button.btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom right,#2DD4BF,#0F766E);
+}
+
+.dark-mode .dialog-pane .button.btn-ghost,
+.dark-mode.dialog-pane .button.btn-ghost { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #94A3B8; }
+.dark-mode .dialog-pane .button.btn-ghost:hover,
+.dark-mode.dialog-pane .button.btn-ghost:hover { -fx-background-color: rgba(255,255,255,0.07); -fx-text-fill: #F1F5F9; }
+
+/* Standard button coloring overrides to ensure vibrancy */
+.btn-primary { -fx-background-color: #0D9488; -fx-text-fill: white; }
+.btn-primary:hover { -fx-background-color: #0F766E; }
+.btn-success { -fx-background-color: #16A34A; -fx-text-fill: white; }
+.btn-success:hover { -fx-background-color: #15803D; }
+.btn-danger { -fx-background-color: #DC2626; -fx-text-fill: white; }
+.btn-danger:hover { -fx-background-color: #B91C1C; }
+
+.dark-mode .btn-primary { -fx-background-color: #14B8A6; }
+.dark-mode .btn-primary:hover { -fx-background-color: #2DD4BF; }
+.dark-mode .btn-success { -fx-background-color: #22C55E; }
+.dark-mode .btn-success:hover { -fx-background-color: #4ADE80; }
+.dark-mode .btn-danger { -fx-background-color: #EF4444; }
+.dark-mode .btn-danger:hover { -fx-background-color: #F87171; }
+
+/* FIX: Edit/Delete action icons disappearing on hover in dark mode */
+.action-delete .icon-svg { -fx-fill: #DC2626; }
+.action-delete:hover .icon-svg { -fx-fill: #EF4444; }
+.dark-mode .action-delete .icon-svg { -fx-fill: #F87171; }
+.dark-mode .action-delete:hover .icon-svg { -fx-fill: #FCA5A5; }
+
+/* FIX: Edit icon had no color — give it indigo so it's visually distinct from delete */
+.action-edit .icon-svg { -fx-fill: #6366F1; }
+.action-edit:hover .icon-svg { -fx-fill: #818CF8; }
+.dark-mode .action-edit .icon-svg { -fx-fill: #818CF8; }
+.dark-mode .action-edit:hover .icon-svg { -fx-fill: #C7D2FE; }
+
+/* FIX: Edit button in user management should use indigo in dark mode too */
+.dark-mode .btn-indigo { -fx-background-color: linear-gradient(to bottom right, #4F46E5, #6366F1); -fx-text-fill: white; }
+.dark-mode .btn-indigo:hover { -fx-background-color: linear-gradient(to bottom right, #6366F1, #818CF8); }
+
+
+
+/* 
+   DARK MODE  ScrollPane + ScrollBar
+    */
+
+.dark-mode .scroll-pane,
+.dark-mode .scroll-pane > .viewport { -fx-background-color: transparent; -fx-background: transparent; }
+
+.dark-mode .scroll-bar                       { -fx-background-color: #1E293B; }
+.dark-mode .scroll-bar .thumb               { -fx-background-color: #475569; -fx-background-radius: 4; }
+.dark-mode .scroll-bar .thumb:hover         { -fx-background-color: #64748B; }
+.dark-mode .scroll-bar .track,
+.dark-mode .scroll-bar .track-background    { -fx-background-color: #1E293B; }
+.dark-mode .scroll-bar .increment-button,
+.dark-mode .scroll-bar .decrement-button    { -fx-background-color: #1E293B; }
+.dark-mode .scroll-bar .increment-arrow,
+.dark-mode .scroll-bar .decrement-arrow     { -fx-background-color: #64748B; }
+
+
+/* 
+   DARK MODE  TableView
+    */
+
+.dark-mode .table-view { -fx-background-color: #1E293B; -fx-border-color: #334155; -fx-table-cell-border-color: #334155; }
+.dark-mode .table-view .column-header-background { -fx-background-color: #0F172A; }
+.dark-mode .table-view .column-header,
+.dark-mode .table-view .filler { -fx-background-color: #0F172A; -fx-border-color: #334155; -fx-border-width: 0 1 1 0; }
+.dark-mode .table-view .column-header .label { -fx-text-fill: #94A3B8; -fx-font-weight: 700; -fx-font-size: 11px; }
+.dark-mode .table-row-cell          { -fx-background-color: #1E293B; -fx-text-fill: #CBD5E1; }
+.dark-mode .table-row-cell:odd      { -fx-background-color: #192236; }
+.dark-mode .table-row-cell:hover    { -fx-background-color: #253350; }
+.dark-mode .table-row-cell:selected { -fx-background-color: rgba(13,148,136,0.2); }
+.dark-mode .table-row-cell:selected .table-cell { -fx-text-fill: #E2E8F0; }
+.dark-mode .table-cell              { -fx-text-fill: #CBD5E1; -fx-border-color: transparent; }
+.dark-mode .table-view .placeholder .label { -fx-text-fill: #64748B; }
+
+
+/* 
+   DARK MODE  TabPane
+    */
+
+.dark-mode .tab-pane                           { -fx-background-color: #1E293B; }
+.dark-mode .tab-pane .tab-header-area          { -fx-background-color: #0F172A; }
+.dark-mode .tab-pane .tab-header-background    { -fx-background-color: #0F172A; -fx-border-color: transparent transparent #334155 transparent; -fx-border-width: 0 0 1 0; }
+.dark-mode .tab                                { -fx-background-color: transparent; -fx-padding: 8 18; }
+.dark-mode .tab .tab-label                     { -fx-text-fill: #94A3B8; -fx-font-size: 13px; -fx-font-weight: 600; }
+.dark-mode .tab:selected                       { -fx-background-color: #1E293B; }
+.dark-mode .tab:selected .tab-label            { -fx-text-fill: #14B8A6; }
+.dark-mode .tab:hover:!selected .tab-label     { -fx-text-fill: #CBD5E1; }
+.dark-mode .tab-content-area                   { -fx-background-color: #1E293B; -fx-border-color: transparent; -fx-border-width: 0; }
+
+
+/* 
+   DARK MODE  CheckBox, RadioButton, Separator, Hyperlink, Tooltip
+    */
+
+.dark-mode .check-box               { -fx-text-fill: #CBD5E1; }
+.dark-mode .check-box .box          { -fx-background-color: #0F172A; -fx-border-color: #475569; -fx-border-radius: 4; -fx-background-radius: 4; }
+.dark-mode .check-box:selected .box { -fx-background-color: #0D9488; -fx-border-color: #0D9488; }
+.dark-mode .check-box:selected .mark { -fx-background-color: white; }
+
+.dark-mode .radio-button               { -fx-text-fill: #CBD5E1; }
+.dark-mode .radio-button .radio        { -fx-background-color: #0F172A; -fx-border-color: #475569; -fx-border-radius: 50%; -fx-background-radius: 50%; }
+.dark-mode .radio-button:selected .radio { -fx-background-color: #0D9488; -fx-border-color: #0D9488; }
+.dark-mode .radio-button:selected .dot  { -fx-background-color: white; -fx-background-radius: 50%; }
+
+.dark-mode .separator .line { -fx-border-color: #334155; -fx-border-width: 1 0 0 0; }
+
+.dark-mode .hyperlink         { -fx-text-fill: #14B8A6; -fx-border-color: transparent; }
+.dark-mode .hyperlink:hover   { -fx-text-fill: #5EEAD4; }
+.dark-mode .hyperlink:visited { -fx-text-fill: #0F766E; }
+
+.dark-mode .tooltip {
+    -fx-background-color: #0F172A;
+    -fx-text-fill: #E2E8F0;
+    -fx-border-color: #475569;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-font-size: 12px;
+}
+
+.dark-mode .progress-indicator .percentage  { -fx-fill: #94A3B8; }
+.dark-mode .progress-indicator .indicator   { -fx-background-color: #1E293B; }
+.dark-mode .progress-indicator .progress    { -fx-background-color: #0D9488; }
+
+
+/* 
+   RESPONSIVE  metric stat cards (no fixed widths)
+    */
+
+.metric-card {
+    -fx-min-width: 200px;
+    -fx-pref-width: -1;
+    -fx-max-width: infinity;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+
+/* 
+   FIX: Editable ComboBox inner text field  no double border
+   The inner text-field should be transparent since the ComboBox
+   container already draws the outer border.
+    */
+
+.combo-box:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+.dark-mode .combo-box:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-text-fill: #F1F5F9;
+}
+
+/* 
+   FIX: DatePicker dark mode styling
+    */
+
+.dark-mode .date-picker {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #475569;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+.dark-mode .date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #F1F5F9;
+}
+.dark-mode .date-picker > .arrow-button {
+    -fx-background-color: transparent;
+}
+.dark-mode .date-picker > .arrow-button > .arrow {
+    -fx-background-color: #94A3B8;
+}
+/* Date Picker popup dark mode */
+.dark-mode .date-picker-popup {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #475569;
+}
+.dark-mode .date-picker-popup .month-year-pane {
+    -fx-background-color: #0F172A;
+}
+.dark-mode .date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #F1F5F9;
+    -fx-font-weight: 700;
+}
+.dark-mode .date-picker-popup .month-year-pane .button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #CBD5E1;
+}
+.dark-mode .date-picker-popup .month-year-pane .button:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: white;
+}
+.dark-mode .date-picker-popup .day-name-cell, .dark-mode .date-picker-popup .week-number-cell {
+    -fx-text-fill: #94A3B8;
+}
+.dark-mode .date-picker-popup .day-cell {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #F1F5F9;
+}
+.dark-mode .date-picker-popup .day-cell:hover {
+    -fx-background-color: #334155;
+}
+.dark-mode .date-picker-popup .day-cell.selected {
+    -fx-background-color: #0D9488;
+    -fx-text-fill: #F1F5F9;
+}
+
+/* Fix double borders on DatePicker when styled */
+.date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}

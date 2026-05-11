@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Library OS
+Comment=Professional Library Management System
+Exec=/opt/libraryos/bin/LibraryOS %U
+Icon=libraryos
+Terminal=false
+Type=Application
+Categories=Office;Database;Education;
+StartupWMClass=LibraryOS
+StartupNotify=true
+MimeType=application/x-libraryos;
+
+
+

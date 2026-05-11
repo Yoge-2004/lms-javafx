@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+        .header { background: #0f172a; color: #ffffff; padding: 32px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .content { padding: 32px; }
+        .invoice-info { display: flex; justify-content: space-between; margin-bottom: 32px; font-size: 14px; color: #64748b; }
+        .details-box { background: #f1f5f9; border-radius: 8px; padding: 20px; margin-bottom: 32px; }
+        .details-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .details-row:last-child { margin-bottom: 0; }
+        .label { font-weight: 600; color: #475569; }
+        .total-section { border-top: 2px solid #e2e8f0; padding-top: 20px; text-align: right; }
+        .total-amount { font-size: 28px; font-weight: 800; color: #0d9488; }
+        .footer { padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{LIBRARY_NAME}}</h1>
+            <p style="margin-top: 8px; opacity: 0.8; font-size: 14px;">Fine Payment Receipt</p>
+        </div>
+        <div class="content">
+            <div class="invoice-info">
+                <div>
+                    <strong>Invoice ID:</strong> {{INVOICE_ID}}<br>
+                    <strong>Date:</strong> {{DATE}}
+                </div>
+                <div style="text-align: right;">
+                    <strong>Member:</strong> {{USER_NAME}}<br>
+                    <strong>ID:</strong> {{USER_ID}}
+                </div>
+            </div>
+
+            <p>Hello {{USER_NAME}},</p>
+            <p>This email confirms your payment for the overdue fine associated with the following item:</p>
+
+            <div class="details-box">
+                <div class="details-row">
+                    <span class="label">Book Title</span>
+                    <span>{{BOOK_TITLE}}</span>
+                </div>
+                <div class="details-row">
+                    <span class="label">ISBN</span>
+                    <span>{{ISBN}}</span>
+                </div>
+                <div class="details-row">
+                    <span class="label">Overdue Days</span>
+                    <span>{{DAYS}} day(s)</span>
+                </div>
+            </div>
+
+            <div class="total-section">
+                <div style="font-size: 14px; color: #64748b; font-weight: 600;">TOTAL PAID</div>
+                <div class="total-amount">{{AMOUNT}}</div>
+            </div>
+            
+            <p style="margin-top: 32px; font-size: 14px;">If you have any questions regarding this receipt, please contact the library administration.</p>
+        </div>
+        <div class="footer">
+            &copy; {{YEAR}} {{LIBRARY_NAME}}. All rights reserved.<br>
+            Powered by Library OS
+        </div>
+    </div>
+</body>
+</html>
