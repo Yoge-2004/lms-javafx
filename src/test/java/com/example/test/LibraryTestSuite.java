@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li><b>Robustness:</b> Edge-case handling for malformed inputs and extreme values.</li>
  * </ol>
  * 
- * @author Antigravity AI
+ * @author Yogeshwaran M
  * @version 4.3
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -50,7 +50,7 @@ public class LibraryTestSuite {
     /** Path to the temporary home directory used for test isolation. */
     private static Path tempHome;
 
-    /**
+    /**Delete: Old app screenshots
      * Initializes the global test environment.
      * Sets the {@code libraryos.home} system property to a temporary directory.
      * 
