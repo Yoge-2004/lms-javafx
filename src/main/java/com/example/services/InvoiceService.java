@@ -292,23 +292,102 @@ public final class InvoiceService {
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background: white; -fx-background-color: white;");
 
-        Button btn = new Button("Print Now");
-        btn.getStyleClass().add("btn-primary");
-        btn.setOnAction(e -> {
+        // ── Check printer availability up-front so we can show the right buttons ──
+        // On Wayland / Hyprland (CachyOS etc.) JavaFX's PrinterJob uses CUPS.
+        // If CUPS has no printers configured (not even cups-pdf), createPrinterJob()
+        // returns null and showPrintDialog() is never reached — causing a silent no-op.
+        // We detect this early and always offer "Save as PNG" as a fallback.
+        boolean hasPrinters = !javafx.print.Printer.getAllPrinters().isEmpty();
+
+        Button printBtn = new Button(hasPrinters ? "Print Now" : "No Printers — try Save as PNG");
+        printBtn.getStyleClass().add("btn-primary");
+        printBtn.setDisable(!hasPrinters);
+
+        Button saveBtn = new Button("Save as PNG");
+        saveBtn.getStyleClass().add("btn-secondary");
+
+        Label printerWarning = new Label();
+        if (!hasPrinters) {
+            printerWarning.setText(
+                "No printers detected via CUPS.\n" +
+                "On Wayland/Hyprland install cups-pdf for a virtual PDF printer:\n" +
+                "  sudo pacman -S cups cups-pdf && sudo systemctl enable --now cups\n" +
+                "Or use \"Save as PNG\" to export the receipt.");
+            printerWarning.setStyle(
+                "-fx-text-fill: #DC2626; -fx-font-size: 12px; -fx-wrap-text: true;");
+            printerWarning.setWrapText(true);
+            printerWarning.setMaxWidth(460);
+        }
+
+        printBtn.setOnAction(e -> {
             PrinterJob job = PrinterJob.createPrinterJob();
-            if (job != null && job.showPrintDialog(printStage)) {
+            if (job == null) {
+                // Printer list changed between open and click — show actionable error.
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("No Printers Found");
+                alert.setHeaderText("No printers detected");
+                alert.setContentText(
+                    "JavaFX could not find any printers via CUPS.\n\n" +
+                    "On CachyOS / Arch with Hyprland:\n" +
+                    "  1. Install CUPS:  sudo pacman -S cups cups-pdf\n" +
+                    "  2. Enable CUPS:   sudo systemctl enable --now cups\n" +
+                    "  3. Restart the app and try again.\n\n" +
+                    "Alternatively, use the \"Save as PNG\" button to export the receipt.");
+                AppTheme.applyTheme(alert.getDialogPane());
+                alert.showAndWait();
+                return;
+            }
+            boolean proceed = job.showPrintDialog(printStage);
+            if (proceed) {
                 boolean success = job.printPage(printable);
-                if (success) job.endJob();
-                printStage.close();
+                if (success) {
+                    job.endJob();
+                    printStage.close();
+                } else {
+                    job.cancelJob();
+                }
+            } else {
+                job.cancelJob();
             }
         });
 
-        VBox layout = new VBox(20, scroll, btn);
+        saveBtn.setOnAction(e -> {
+            // Force layout so snapshot captures all content at full size
+            new Scene(printable);
+            printable.applyCss();
+            printable.layout();
+
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(javafx.scene.paint.Color.WHITE);
+            WritableImage image = printable.snapshot(params, null);
+
+            javafx.stage.FileChooser chooser = new javafx.stage.FileChooser();
+            chooser.setTitle("Save Receipt as PNG");
+            chooser.setInitialFileName("Invoice_" + invoiceId + ".png");
+            chooser.getExtensionFilters().add(
+                new javafx.stage.FileChooser.ExtensionFilter("PNG Image", "*.png"));
+            java.io.File file = chooser.showSaveDialog(printStage);
+            if (file != null) {
+                try {
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+                } catch (Exception ex) {
+                    Alert err = new Alert(Alert.AlertType.ERROR,
+                        "Could not save file:\n" + ex.getMessage());
+                    AppTheme.applyTheme(err.getDialogPane());
+                    err.showAndWait();
+                }
+            }
+        });
+
+        HBox btnRow = new HBox(10, printBtn, saveBtn);
+        btnRow.setAlignment(Pos.CENTER);
+
+        VBox layout = new VBox(14, scroll, printerWarning, btnRow);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: white;");
 
-        Scene scene = new Scene(layout, 500, 750);
+        Scene scene = new Scene(layout, 520, 780);
         AppTheme.applyTheme(scene);
         printStage.setScene(scene);
         printStage.show();

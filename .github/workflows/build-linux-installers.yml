@@ -1,0 +1,80 @@
+name: Build Linux Installers
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Linux packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fakeroot rpm binutils
+
+      - name: Build project and package
+        run: |
+          mvn -B clean package -DskipTests \
+            -Dmaven.compiler.release=26
+
+      - name: Build .deb installer
+        run: |
+          mvn -B jpackage:jpackage@linux-deb -DskipTests
+          # Copy to dist/
+          mkdir -p dist
+          find target -name "*.deb" -exec cp {} dist/ \;
+
+      - name: Build .rpm installer
+        run: |
+          mvn -B jpackage:jpackage@linux-rpm -DskipTests
+          find target -name "*.rpm" -exec cp {} dist/ \;
+
+      - name: List built installers
+        run: ls -lh dist/
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: dist/*.deb
+
+      - name: Upload .rpm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-rpm
+          path: dist/*.rpm
+
+      - name: Create/update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-linux
+          name: "Latest Linux Build"
+          body: |
+            Auto-built Linux installers from the latest `main` branch.
+
+            ### Fix included
+            - **Printing fix for Wayland/Hyprland (CachyOS):** `PrinterJob.createPrinterJob()`
+              was silently returning `null` when CUPS had no printers configured, causing the
+              print dialog to never open. Now shows a proper error with fix instructions and
+              a **Save as PNG** fallback that always works regardless of CUPS.
+            - Added missing `javafx-print` Maven dependency and `requires javafx.print` in
+              `module-info.java`.
+          files: |
+            dist/*.deb
+            dist/*.rpm
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

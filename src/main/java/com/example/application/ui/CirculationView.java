@@ -1999,8 +1999,13 @@ public class CirculationView extends BorderPane {
     private void printOverdueReport(javafx.scene.control.TableView<IssueRecord> table) {
         javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
         if (job == null) {
+            // On Wayland / Hyprland (CachyOS etc.) CUPS is often not installed, so
+            // JavaFX finds no printers and createPrinterJob() returns null.
+            // Fix: sudo pacman -S cups cups-pdf && sudo systemctl enable --now cups
             if (toast != null) toast.showWarning(
-                    "No printer found. Install a printer driver, or use the Export CSV button instead.");
+                    "No printer found. On Arch/CachyOS install CUPS: " +
+                    "sudo pacman -S cups cups-pdf && sudo systemctl enable --now cups. " +
+                    "Or use the Export CSV button instead.");
             return;
         }
 

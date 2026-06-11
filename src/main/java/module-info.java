@@ -3,6 +3,7 @@ module com.example.application {
     requires transitive javafx.controls;
     requires transitive javafx.graphics;
     requires javafx.swing;
+    requires javafx.print;   // PrinterJob / Printer API
     requires java.desktop;
     requires java.logging;
     requires jakarta.mail;
