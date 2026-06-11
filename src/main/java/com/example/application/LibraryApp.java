@@ -213,8 +213,13 @@ public class LibraryApp extends Application implements ToastDisplay {
         // Skip: official deb/rpm installation at /opt/libraryos
         if (codePath.contains("/opt/libraryos")) return;
 
-        // Skip: running straight from Maven target/ or an IDE class-path
-        if (codePath.endsWith(".class") || codePath.contains("/target/classes")) return;
+        // Skip: any development execution — Maven target/, IDE class output, or
+        // bare .class files. This covers:
+        //   ./mvnw javafx:run          → .../target/classes/
+        //   java -jar target/foo.jar   → .../target/library-os-full.jar
+        //   IntelliJ Run button        → .../target/classes/ or .../out/
+        if (codePath.contains("/target/") || codePath.contains("/out/")
+                || codePath.endsWith(".class")) return;
 
         // ── 3. Check the integration marker ───────────────────────────────────
         Path marker = Paths.get(System.getProperty("user.home"),
