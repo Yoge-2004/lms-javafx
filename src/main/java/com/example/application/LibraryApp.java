@@ -213,13 +213,25 @@ public class LibraryApp extends Application implements ToastDisplay {
         // Skip: official deb/rpm installation at /opt/libraryos
         if (codePath.contains("/opt/libraryos")) return;
 
-        // Skip: any development execution — Maven target/, IDE class output, or
-        // bare .class files. This covers:
-        //   ./mvnw javafx:run          → .../target/classes/
-        //   java -jar target/foo.jar   → .../target/library-os-full.jar
-        //   IntelliJ Run button        → .../target/classes/ or .../out/
-        if (codePath.contains("/target/") || codePath.contains("/out/")
-                || codePath.endsWith(".class")) return;
+        // Skip unless the JAR is inside a jpackage app-image.
+        //
+        // In a jpackage app-image the JAR is ALWAYS at:
+        //   <install-root>/lib/app/<name>.jar
+        //
+        // This is a stable, unique fingerprint. Checking it replaces
+        // fragile path enumeration (Eclipse uses bin/, Gradle uses build/,
+        // NetBeans uses build/classes/, IntelliJ uses out/, Maven uses
+        // target/, VS Code varies, custom dirs are unbounded, etc.).
+        // Any path that does NOT match lib/app/ is silently ignored —
+        // regardless of OS, IDE, working directory, or folder name.
+        Path jarPath   = Paths.get(codePath);
+        Path parentDir = jarPath.getParent();                        // should be lib/app
+        Path grandDir  = (parentDir  != null) ? parentDir.getParent()  : null; // should be lib
+        if (parentDir == null || grandDir == null
+                || !"app".equals(parentDir.getFileName().toString())
+                || !"lib".equals(grandDir.getFileName().toString())) {
+            return;   // not a jpackage app-image layout — silently skip
+        }
 
         // ── 3. Check the integration marker ───────────────────────────────────
         Path marker = Paths.get(System.getProperty("user.home"),
@@ -230,11 +242,8 @@ public class LibraryApp extends Application implements ToastDisplay {
         // jpackage app-image layout:  <root>/lib/app/library-os-full.jar
         //                             <root>/bin/LibraryOS
         //                             <root>/postextract.sh   ← our script
-        // codePath points at the JAR, so go up three levels to reach <root>.
-        Path jarPath     = Paths.get(codePath);         // …/lib/app/library-os-full.jar
-        Path installRoot = jarPath.getParent()           // …/lib/app
-                                  .getParent()           // …/lib
-                                  .getParent();          // <root>
+        // grandDir points to <root>/lib, so grandDir.getParent() is <root>.
+        Path installRoot = grandDir.getParent();
 
         Path script = installRoot.resolve("postextract.sh");
         if (!Files.exists(script)) {
