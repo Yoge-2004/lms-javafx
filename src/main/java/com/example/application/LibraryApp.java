@@ -22,6 +22,9 @@ import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -179,8 +182,112 @@ public class LibraryApp extends Application implements ToastDisplay {
     // Application lifecycle
     // =========================================================================
 
+    // =========================================================================
+    // Tarball first-run integration (Arch / generic Linux .tar.xz)
+    // =========================================================================
+
+    /**
+     * On the very first launch from a {@code .tar.xz} extraction, runs
+     * {@code postextract.sh} on a background thread so the app icon and
+     * {@code .desktop} entry are registered in the user's
+     * {@code ~/.local/share} directories — regardless of whether the user
+     * opened the binary directly from a file manager or via the terminal
+     * wrapper script.
+     *
+     * <p>The method is a no-op on Windows/macOS, when running from the
+     * official {@code /opt/libraryos} installation, or when running from
+     * a development class-path (Maven / IDE).
+     */
+    private static void runTarballIntegrationIfNeeded() {
+        // ── 1. Linux only ─────────────────────────────────────────────────────
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (!os.contains("nix") && !os.contains("nux") && !os.contains("aix")) return;
+
+        // ── 2. Resolve where *this* binary lives ──────────────────────────────
+        String codePath = LibraryApp.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getPath();
+
+        // Skip: official deb/rpm installation at /opt/libraryos
+        if (codePath.contains("/opt/libraryos")) return;
+
+        // Skip: running straight from Maven target/ or an IDE class-path
+        if (codePath.endsWith(".class") || codePath.contains("/target/classes")) return;
+
+        // ── 3. Check the integration marker ───────────────────────────────────
+        Path marker = Paths.get(System.getProperty("user.home"),
+                ".local", "share", "libraryos", ".integrated");
+        if (Files.exists(marker)) return;   // already integrated — nothing to do
+
+        // ── 4. Locate postextract.sh relative to the running binary ───────────
+        // jpackage app-image layout:  <root>/lib/app/library-os-full.jar
+        //                             <root>/bin/LibraryOS
+        //                             <root>/postextract.sh   ← our script
+        // codePath points at the JAR, so go up three levels to reach <root>.
+        Path jarPath     = Paths.get(codePath);         // …/lib/app/library-os-full.jar
+        Path installRoot = jarPath.getParent()           // …/lib/app
+                                  .getParent()           // …/lib
+                                  .getParent();          // <root>
+
+        Path script = installRoot.resolve("postextract.sh");
+        if (!Files.exists(script)) {
+            Logger.getLogger(LibraryApp.class.getName())
+                  .warning("[tarball] postextract.sh not found at " + script
+                           + " — skipping desktop integration.");
+            return;
+        }
+
+        // ── 5. Run postextract.sh on a daemon thread (non-blocking) ───────────
+        Logger.getLogger(LibraryApp.class.getName())
+              .info("[tarball] First run detected — running desktop integration: " + script);
+
+        Thread integrationThread = new Thread(() -> {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(
+                        "sh", script.toAbsolutePath().toString(),
+                        installRoot.toAbsolutePath().toString());
+                pb.redirectErrorStream(true);   // merge stderr → stdout
+                Process proc = pb.start();
+
+                // Drain output so the process doesn't block on a full pipe
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(proc.getInputStream()))) {
+                    Logger logger = Logger.getLogger(LibraryApp.class.getName());
+                    reader.lines().forEach(line -> logger.info("[postextract] " + line));
+                }
+
+                int exit = proc.waitFor();
+                if (exit != 0) {
+                    Logger.getLogger(LibraryApp.class.getName())
+                          .warning("[tarball] postextract.sh exited with code " + exit);
+                } else {
+                    // Write marker so we never run integration again
+                    Files.createDirectories(marker.getParent());
+                    Files.writeString(marker,
+                            "integrated on " + java.time.Instant.now() + "\n");
+                    Logger.getLogger(LibraryApp.class.getName())
+                          .info("[tarball] Desktop integration complete.");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                Logger.getLogger(LibraryApp.class.getName())
+                      .log(Level.WARNING, "[tarball] Desktop integration failed", e);
+            }
+        }, "libraryos-tarball-integration");
+        integrationThread.setDaemon(true);  // must not prevent JVM exit
+        integrationThread.start();
+    }
+
+    // =========================================================================
+    // Application lifecycle
+    // =========================================================================
+
     @Override
     public void start(Stage stage) {
+        runTarballIntegrationIfNeeded();   // no-op on deb/rpm/windows; first-run only
         configureDesktopIdentity();
         instance = this;
         LoggingConfigurator.configure();

@@ -1,0 +1,61 @@
+#!/bin/sh
+# libraryos — Launcher wrapper for the .tar.xz distribution of LibraryOS
+#
+# On FIRST RUN: automatically runs postextract.sh to install icons,
+#               the desktop entry, and the ~/.local/bin symlink.
+# On SUBSEQUENT RUNS: launches the app directly with no overhead.
+#
+# This script is intended to live at the root of the extracted tarball
+# (alongside bin/ and lib/). Users double-click it or run it from the
+# terminal to start the app.
+#
+#  Tarball layout expected:
+#   LibraryOS/
+#   ├── libraryos          ← this script  (chmod +x)
+#   ├── postextract.sh     ← icon binding script  (chmod +x)
+#   ├── bin/
+#   │   └── LibraryOS      ← real jpackage app-image binary
+#   └── lib/
+#       ├── LibraryOS.png  ← app icon (512×512)
+#       └── ...
+
+set -e
+
+# ── Resolve the directory this script lives in ───────────────────────────────
+# Works regardless of how the script is invoked (relative path, symlink, etc.)
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+REAL_BIN="$INSTALL_DIR/bin/LibraryOS"
+POSTEXTRACT="$INSTALL_DIR/postextract.sh"
+MARKER="$HOME/.local/share/libraryos/.integrated"
+
+# ── Sanity check ─────────────────────────────────────────────────────────────
+if [ ! -f "$REAL_BIN" ]; then
+    echo "[LibraryOS] ERROR: Binary not found at '$REAL_BIN'." >&2
+    echo "  Make sure you are running this script from inside the extracted folder." >&2
+    exit 1
+fi
+
+# ── First-run integration ─────────────────────────────────────────────────────
+if [ ! -f "$MARKER" ]; then
+    echo "[LibraryOS] First run detected — setting up desktop integration..."
+
+    if [ ! -f "$POSTEXTRACT" ]; then
+        echo "[LibraryOS] WARNING: postextract.sh not found, skipping integration." >&2
+    else
+        chmod +x "$POSTEXTRACT"
+        # Pass the install directory so postextract.sh knows where lib/ and bin/ are
+        "$POSTEXTRACT" "$INSTALL_DIR"
+
+        # Write marker so we never run integration again
+        mkdir -p "$(dirname "$MARKER")"
+        echo "integrated on $(date -Iseconds)" > "$MARKER"
+        echo "[LibraryOS] Marker written to $MARKER"
+    fi
+
+    echo ""
+fi
+
+# ── Launch the real application ───────────────────────────────────────────────
+exec "$REAL_BIN" "$@"

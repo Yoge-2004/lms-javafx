@@ -481,5 +481,92 @@
             </build>
         </profile>
 
+        <!-- ── Linux → .tar.xz (Arch / generic) ──────────────────────── -->
+        <!--   Produces a self-contained app-image tarball with a first-run  -->
+        <!--   launcher that installs icons & a .desktop entry automatically. -->
+        <!--   Build with:  mvn package -Dinstaller -Pinstaller-linux-tarball -->
+        <profile>
+            <id>installer-linux-tarball</id>
+            <activation>
+                <os><family>unix</family></os>
+                <property><name>installer</name></property>
+            </activation>
+            <build>
+                <plugins>
+
+                    <!-- Step 1: build the jpackage app-image (no installer, plain dir) -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-app-image</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>library-os-full.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--name</argument>
+                                        <argument>LibraryOS</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Library OS</argument>
+                                        <argument>--description</argument>
+                                        <argument>Professional Library Management System</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/app-image</argument>
+                                        <argument>--type</argument>
+                                        <argument>app-image</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/packaging/icons/app-icon.png</argument>
+                                        <argument>--java-options</argument>
+                                        <argument>--enable-native-access=javafx.graphics</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <!-- Step 2: copy launcher scripts into the app-image root -->
+                            <!-- NOTE: Paths are assigned to shell variables first so that  -->
+                            <!-- spaces in the project path do not break word-splitting.    -->
+                            <execution>
+                                <id>copy-launcher-scripts</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>sh</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>BASE='${project.basedir}' ; APPIMG='${project.build.directory}/app-image/LibraryOS' ; cp "$BASE/src/main/packaging/linux/libraryos" "$APPIMG/libraryos" &amp;&amp; cp "$BASE/src/main/packaging/linux/postextract.sh" "$APPIMG/postextract.sh" &amp;&amp; chmod +x "$APPIMG/libraryos" "$APPIMG/postextract.sh"</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <!-- Step 3: compress into .tar.xz and copy to dist/ -->
+                            <execution>
+                                <id>create-tarball</id>
+                                <phase>install</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>sh</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>BASE='${project.basedir}' ; BUILDDIR='${project.build.directory}' ; VERSION='${project.version}' ; mkdir -p "$BASE/dist" &amp;&amp; tar -C "$BUILDDIR/app-image" -cJf "$BASE/dist/libraryos-$VERSION-linux-x64.tar.xz" LibraryOS</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>

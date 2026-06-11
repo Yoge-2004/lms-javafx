@@ -344,23 +344,71 @@ Prebuilt artifacts currently tracked in `dist/`:
 | Windows | `dist/LibraryOS-3.4.0.exe` | Run the installer and follow the setup wizard. |
 | Debian/Ubuntu/Zorin | `dist/libraryos_3.4.0_amd64.deb` | `sudo apt install ./dist/libraryos_3.4.0_amd64.deb` |
 | Fedora/RHEL/CentOS | `dist/libraryos-3.4.0-1.x86_64.rpm` | `sudo dnf install ./dist/libraryos-3.4.0-1.x86_64.rpm` |
+| Arch / any Linux | `dist/libraryos-3.4.0-linux-x64.tar.xz` | Extract and open — see below. |
 
-After Linux installation, launch from the application menu as `Library OS` or from a terminal:
+After Linux installation via `.deb` or `.rpm`, launch from the application menu as `Library OS` or from a terminal:
 
 ```bash
 libraryos
+```
+
+### Arch Linux and generic tarball
+
+For distributions that do not use `.deb` or `.rpm` (Arch, Manjaro, EndeavourOS, Alpine, Gentoo, etc.), use the `.tar.xz` bundle.
+
+**Extraction:**
+
+```bash
+tar -xf libraryos-3.4.0-linux-x64.tar.xz
+```
+
+**Running:**
+
+Open `LibraryOS/bin/LibraryOS` from your file manager, or run it from a terminal:
+
+```bash
+./LibraryOS/bin/LibraryOS
+```
+
+**Desktop shortcut — opening the app once is all that is needed.**
+
+On the very first launch, Library OS automatically installs the desktop shortcut and app icon into your home directory. No terminal command, no separate install script, no root password required. The integration runs silently in the background while the app loads normally.
+
+After the first run you will see `Library OS` in your application launcher (GNOME Activities, KDE application menu, Xfce Whisker Menu, etc.) and the icon appears in the taskbar.
+
+The integration writes to:
+
+- `~/.local/share/icons/hicolor/` — app icon at multiple sizes.
+- `~/.local/share/applications/libraryos.desktop` — application menu entry.
+- `~/.local/bin/libraryos` — terminal shortcut (if `~/.local/bin` is on your `PATH`).
+- `~/.local/share/libraryos/.integrated` — a marker that prevents the setup from running again.
+
+If you prefer to run the integration manually before first launch:
+
+```bash
+./LibraryOS/postextract.sh ./LibraryOS
 ```
 
 The Maven configuration can also build a macOS `.dmg`, but no macOS artifact is currently checked into `dist/`.
 
 ### Uninstall
 
-Linux:
+Linux (deb/rpm):
 
 ```bash
 sudo apt remove libraryos
 # or
 sudo dnf remove libraryos
+```
+
+Linux (tarball): delete the extracted `LibraryOS/` folder, then remove the user-level integration files:
+
+```bash
+rm -rf ~/.local/share/icons/hicolor/*/apps/libraryos.png
+rm -f  ~/.local/share/applications/libraryos.desktop
+rm -f  ~/.local/bin/libraryos
+rm -rf ~/.local/share/libraryos
+update-desktop-database ~/.local/share/applications/ 2>/dev/null || true
 ```
 
 Windows: use Settings -> Apps -> Installed apps and uninstall `LibraryOS`.
@@ -404,6 +452,14 @@ The installer profile is selected by OS:
 - Windows: `.exe`
 - macOS: `.dmg`
 - Linux: `.deb` and `.rpm`
+
+Build the `.tar.xz` tarball for Arch / generic Linux:
+
+```bash
+./mvnw clean install -Dinstaller -Pinstaller-linux-tarball -DskipTests
+```
+
+This produces `dist/libraryos-3.4.0-linux-x64.tar.xz`, a self-contained app-image bundle with the launcher wrapper and icon binding script included.
 
 ## Configuration
 
@@ -499,8 +555,10 @@ Packaging:
 src/main/packaging/
   icons/
   linux/LibraryOS.desktop
-  linux/postinst
-  linux/prerm
+  linux/postinst          (deb post-install hook)
+  linux/prerm             (deb pre-remove hook)
+  linux/postextract.sh    (tarball icon/desktop integration, user-level)
+  linux/libraryos         (tarball launcher wrapper)
 ```
 
 ### Service boundaries
@@ -521,10 +579,17 @@ src/main/packaging/
 
 The Linux installer profile prepares desktop integration resources, installs app icons, creates a `libraryos` command symlink, and updates desktop/icon caches through maintainer scripts.
 
+The `.tar.xz` tarball profile builds a jpackage app-image and bundles two additional scripts at the root:
+
+- `postextract.sh` — installs icons, a `.desktop` entry, and a `~/.local/bin/libraryos` symlink into the user's home directory without root access.
+- `libraryos` — a launcher wrapper that triggers `postextract.sh` on the first run, then delegates to `bin/LibraryOS`.
+
+The Java application class (`LibraryApp`) also calls `postextract.sh` on the first launch when it detects it is running from a tarball extraction rather than from `/opt/libraryos`. This means desktop integration happens automatically even when the user opens `bin/LibraryOS` directly from a file manager, bypassing the wrapper script.
+
 The desktop entry uses:
 
 - Name: `Library OS`
-- Executable: `/opt/libraryos/bin/LibraryOS %U`
+- Executable: `/opt/libraryos/bin/LibraryOS %U` (deb/rpm) or the absolute tarball binary path (tarball)
 - Icon: `libraryos`
 - Categories: `Office`, `Database`, `Education`
 - Startup WM class: `LibraryOS`

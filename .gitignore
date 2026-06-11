@@ -5,3 +5,4 @@
 /dependency-reduced-pom.xml
 *.class
 *.log
+dist/libraryos-3.4.0-linux-x64.tar.xz
