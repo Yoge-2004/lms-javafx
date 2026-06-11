@@ -337,14 +337,14 @@ For multi-machine use, configure a shared library secret or import through a `.l
 
 ## Installation
 
-Prebuilt artifacts currently tracked in `dist/`:
+Download the latest release from the [**GitHub Releases page**](https://github.com/Yoge-2004/lms-javafx/releases/tag/v3.4.0).
 
 | Platform | Package | Install command or action |
 | --- | --- | --- |
-| Windows | `dist/LibraryOS-3.4.0.exe` | Run the installer and follow the setup wizard. |
-| Debian/Ubuntu/Zorin | `dist/libraryos_3.4.0_amd64.deb` | `sudo apt install ./dist/libraryos_3.4.0_amd64.deb` |
-| Fedora/RHEL/CentOS | `dist/libraryos-3.4.0-1.x86_64.rpm` | `sudo dnf install ./dist/libraryos-3.4.0-1.x86_64.rpm` |
-| Arch / any Linux | `dist/libraryos-3.4.0-linux-x64.tar.xz` | Extract and open — see below. |
+| Windows | [LibraryOS-3.4.0.exe](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/LibraryOS-3.4.0.exe) | Run the installer and follow the setup wizard. |
+| Debian/Ubuntu/Zorin | [libraryos_3.4.0_amd64.deb](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos_3.4.0_amd64.deb) | `sudo apt install ./libraryos_3.4.0_amd64.deb` |
+| Fedora/RHEL/CentOS | [libraryos-3.4.0-1.x86_64.rpm](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-1.x86_64.rpm) | `sudo dnf install ./libraryos-3.4.0-1.x86_64.rpm` |
+| Arch / any Linux | [libraryos-3.4.0-linux-x64.tar.xz](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-linux-x64.tar.xz) | Extract and open — see below. |
 
 After Linux installation via `.deb` or `.rpm`, launch from the application menu as `Library OS` or from a terminal:
 
