@@ -7,6 +7,9 @@ on:
       - 'dist/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -23,16 +26,12 @@ jobs:
           cache: maven
 
       - name: Install Linux packaging tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y fakeroot rpm binutils
+        run: sudo apt-get update -qq && sudo apt-get install -y fakeroot rpm binutils
 
       - name: Build fat JAR + .deb + .rpm
-        id: build
         run: |
           set -o pipefail
           mvn install -B -DskipTests -Dinstaller 2>&1 | tee /tmp/build.log
-          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
 
       - name: Annotate build errors
         if: failure()
@@ -41,25 +40,24 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -60 /tmp/build.log >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          # Also emit as annotations so they're visible in the API
-          tail -40 /tmp/build.log | grep -E "ERROR|error:" | head -20 | while IFS= read -r line; do
+          grep -E "ERROR|error:" /tmp/build.log | head -20 | while IFS= read -r line; do
             echo "::error::$line"
           done
 
       - name: Copy installers to dist/
-        if: success()
         run: |
           mkdir -p dist
           find target/installer -name "*.deb" -o -name "*.rpm" | while read f; do
             cp "$f" dist/
-            echo "Copied: $(basename $f)  $(du -sh $f | cut -f1)"
+            echo "Copied: $(basename $f)  ($(du -sh $f | cut -f1))"
           done
+          ls -lh dist/
 
       - name: Commit updated dist/ back to main
-        if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dist/
-          git diff --staged --quiet && echo "No installer changes." || \
-            (git commit -m "chore: rebuild Linux installers [skip ci]" && git push)
+          git diff --staged --quiet \
+            && echo "No installer changes to commit." \
+            || (git commit -m "chore: rebuild Linux installers [skip ci]" && git push)
