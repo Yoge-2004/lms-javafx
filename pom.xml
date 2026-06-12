@@ -34,14 +34,8 @@
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- javafx.print is a separate module — required for PrinterJob API.
-             Without this, createPrinterJob() silently returns null on any system
-             where the module is not auto-resolved (packaged app, custom runtime). -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-print</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
+        <!-- Note: javafx.print classes (PrinterJob, Printer) are bundled into
+             javafx.graphics in OpenJFX 26 — no separate javafx-print artifact. -->
 
         <!-- Jakarta Mail for email reminders
              Migrated from com.sun.mail:jakarta.mail (CVE-2025-7962) to the
