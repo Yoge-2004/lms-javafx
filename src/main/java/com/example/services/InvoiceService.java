@@ -352,8 +352,10 @@ public final class InvoiceService {
         });
 
         saveBtn.setOnAction(e -> {
-            // Force layout so snapshot captures all content at full size
-            new Scene(printable);
+            // printable is already in printStage's scene — just flush CSS + layout.
+            // Do NOT call new Scene(printable): node is already live and would throw
+            // IllegalStateException: Node already set as root of another scene
+            // on every platform (Windows, macOS, Linux) when Save as PNG is clicked.
             printable.applyCss();
             printable.layout();
 
