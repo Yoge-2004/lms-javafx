@@ -345,7 +345,7 @@ Download the latest release from the [**GitHub Releases page**](https://github.c
 | Debian/Ubuntu/Zorin | [libraryos_3.4.0_amd64.deb](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos_3.4.0_amd64.deb) | `sudo apt install ./libraryos_3.4.0_amd64.deb` |
 | Fedora/RHEL/CentOS | [libraryos-3.4.0-1.x86_64.rpm](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-1.x86_64.rpm) | `sudo dnf install ./libraryos-3.4.0-1.x86_64.rpm` |
 | Arch / any Linux | [libraryos-3.4.0-linux-x64.tar.xz](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-linux-x64.tar.xz) | Extract and open — see below. |
-| macOS | `.dmg` — not currently available | Requires a macOS build machine. Run from source with `./mvnw javafx:run`. |
+| macOS | [LibraryOS-3.4.0.dmg](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/LibraryOS-3.4.0.dmg) | Mount the DMG and drag LibraryOS to your Applications folder. |
 
 After Linux installation via `.deb` or `.rpm`, launch from the application menu as `Library OS` or from a terminal:
 
@@ -390,7 +390,7 @@ If you prefer to run the integration manually before first launch:
 ./LibraryOS/postextract.sh ./LibraryOS
 ```
 
-The Maven configuration can also build a macOS `.dmg`, but no macOS artifact is currently checked into `dist/`.
+The macOS `.dmg` installer is built automatically via GitHub Actions, checked into `dist/LibraryOS-3.4.0.dmg`, and published directly to GitHub Releases.
 
 ### Uninstall
 
