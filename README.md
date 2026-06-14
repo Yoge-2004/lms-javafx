@@ -11,15 +11,27 @@ The application is designed around one important rule: the library registry is g
 
 ## Screenshots
 
-These are representative documentation screenshots using sample data and the same screen concepts implemented in `src/main/java/com/example/application/ui`.
+These are real screenshots of the running Library OS desktop application using seeded sample data and standard views.
 
-| Login and branch selection | Staff dashboard |
-| --- | --- |
-| ![Login screen](assets/screenshots/login.png) | ![Dashboard screen](assets/screenshots/dashboard.png) |
+| First-run Setup Wizard | Login and Branch Selection | Staff Dashboard |
+| --- | --- | --- |
+| ![Setup screen](assets/screenshots/setup.png) | ![Login screen](assets/screenshots/login.png) | ![Dashboard screen](assets/screenshots/dashboard.png) |
 
-| Catalog management | Circulation workflow |
-| --- | --- |
-| ![Catalog screen](assets/screenshots/catalog.png) | ![Circulation screen](assets/screenshots/circulation.png) |
+| Catalog Management | Circulation Workflow | User Administration |
+| --- | --- | --- |
+| ![Catalog screen](assets/screenshots/catalog.png) | ![Circulation screen](assets/screenshots/circulation.png) | ![Users screen](assets/screenshots/users.png) |
+
+| Individual Settings | Data Management | Library Configuration |
+| --- | --- | --- |
+| ![Settings screen](assets/screenshots/settings.png) | ![Data Management screen](assets/screenshots/data_management.png) | ![Library Configuration screen](assets/screenshots/library_configuration.png) |
+
+### Video Walkthrough Tutorial
+
+For a complete visual walkthrough showing setup, navigation, and key workflows in action, view the walkthrough video tutorial:
+
+<video src="assets/walkthrough.mp4" width="100%" controls></video>
+
+Or [download/open the walkthrough video file](assets/walkthrough.mp4) directly.
 
 ## Table of Contents
 
