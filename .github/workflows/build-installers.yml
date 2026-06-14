@@ -1,0 +1,135 @@
+name: Build All Installers
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'dist/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # 1. Linux Installer Build
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Linux packaging tools
+        run: sudo apt-get update -qq && sudo apt-get install -y fakeroot rpm binutils
+
+      - name: Build Linux installers
+        run: ./mvnw install -B -DskipTests -Dinstaller
+
+      - name: Commit Linux installers to dist/
+        run: |
+          mkdir -p dist
+          find target/installer -name "*.deb" -o -name "*.rpm" | while read f; do
+            cp "$f" dist/
+          done
+          # Copy tarball to dist if present
+          if [ -d target/app-image ]; then
+            cp dist/*.tar.xz dist/ || true
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dist/
+          git diff --staged --quiet \
+            || (git commit -m "chore: rebuild Linux installers [skip ci]" && git push)
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v3.4.0
+          files: |
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 2. Windows Installer Build
+  build-windows:
+    needs: build-linux
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Windows installer
+        shell: bash
+        run: ./mvnw install -B -DskipTests -Dinstaller -Pinstaller-windows
+
+      - name: Commit Windows installer to dist/
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase
+          mkdir -p dist
+          cp target/installer/*.exe dist/
+          git add dist/
+          git diff --staged --quiet \
+            || (git commit -m "chore: rebuild Windows installers [skip ci]" && git push origin main)
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v3.4.0
+          files: dist/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 3. macOS Installer Build
+  build-macos:
+    needs: build-windows
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build macOS installer
+        run: ./mvnw install -B -DskipTests -Dinstaller -Pinstaller-mac
+
+      - name: Commit macOS installer to dist/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase
+          mkdir -p dist
+          cp target/installer/*.dmg dist/
+          git add dist/
+          git diff --staged --quiet \
+            || (git commit -m "chore: rebuild macOS installers [skip ci]" && git push origin main)
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v3.4.0
+          files: dist/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
