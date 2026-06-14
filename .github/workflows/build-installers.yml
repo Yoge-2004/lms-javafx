@@ -35,8 +35,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Temporarily move generated tarballs to target to keep dist/ clean for git pull
+          mkdir -p target/temp-tarballs
+          mv dist/*.tar.xz dist/*.tar.gz target/temp-tarballs/ 2>/dev/null || true
           git pull origin main --rebase
+          # Restore the tarballs back to dist/
           mkdir -p dist
+          mv target/temp-tarballs/* dist/ 2>/dev/null || true
           find target/installer -name "*.deb" -o -name "*.rpm" | while read f; do
             cp "$f" dist/
           done
