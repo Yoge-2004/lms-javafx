@@ -29,9 +29,15 @@ These are real screenshots of the running Library OS desktop application using s
 
 For a complete visual walkthrough showing setup, navigation, and key workflows in action, view the walkthrough video tutorial:
 
-<video src="assets/walkthrough.mp4" width="100%" controls></video>
+<video width="100%" controls>
+  <source src="assets/walkthrough.webm" type="video/webm">
+  <source src="assets/walkthrough.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-Or [download/open the walkthrough video file](assets/walkthrough.mp4) directly.
+Or open the video file directly:
+- [Walkthrough Video (WebM format - Open/Linux native)](assets/walkthrough.webm)
+- [Walkthrough Video (MP4 format - Universal)](assets/walkthrough.mp4)
 
 ## Table of Contents
 
