@@ -83,13 +83,26 @@ public class LibraryApp extends Application implements ToastDisplay {
         String os = System.getProperty("os.name").toLowerCase();
         if (!os.contains("nix") && !os.contains("nux") && !os.contains("aix")) return;
 
-        // Skip dev-mode shortcut if running from the official installation path
-        String path = LibraryApp.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        if (path.contains("/opt/libraryos")) {
-            LOG.info("Running from /opt/libraryos - skipping development shortcut setup.");
+        try {
+            // Skip dev-mode shortcut if running from the official installation path,
+            // a packaged app structure, or launched via jpackage/system packages.
+            if (System.getProperty("jpackage.app-path") != null) {
+                LOG.info("Running from production package (jpackage) - skipping development shortcut setup.");
+                return;
+            }
+
+            java.security.CodeSource cs = LibraryApp.class.getProtectionDomain().getCodeSource();
+            if (cs != null && cs.getLocation() != null) {
+                String path = cs.getLocation().getPath().toLowerCase();
+                if (path.contains(".jar") || path.contains("opt/libraryos") || path.contains("lib/app")) {
+                    LOG.info("Running from production package - skipping development shortcut setup.");
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Error checking runtime environment. Skipping development shortcut setup.", e);
             return;
         }
-
 
         try {
             String userHome = System.getProperty("user.home");
@@ -127,12 +140,24 @@ public class LibraryApp extends Application implements ToastDisplay {
                     "StartupNotify=true\n" +
                     "StartupWMClass=" + DESKTOP_APP_ID + "\n";
             java.nio.file.Files.writeString(desktopFile.toPath(), desktopContent);
-            
+
             // Force GNOME/Zorin to refresh its applications and icons cache immediately
             try {
                 Runtime.getRuntime().exec(new String[]{"gtk-update-icon-cache", "-f", "-t", new java.io.File(userHome, ".local/share/icons/hicolor").getAbsolutePath()});
                 Runtime.getRuntime().exec(new String[]{"update-desktop-database", appDir.getAbsolutePath()});
             } catch (Exception ignored) {}
+
+            // Register shutdown hook to delete the dev desktop entry when the JVM exits
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    if (desktopFile.exists()) {
+                        java.nio.file.Files.deleteIfExists(desktopFile.toPath());
+                        try {
+                            Runtime.getRuntime().exec(new String[]{"update-desktop-database", appDir.getAbsolutePath()});
+                        } catch (Exception ignored) {}
+                    }
+                } catch (Exception ignored) {}
+            }));
         } catch (Exception ignored) {}
     }
 
