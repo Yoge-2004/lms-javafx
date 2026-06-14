@@ -33,19 +33,16 @@ jobs:
 
       - name: Commit Linux installers to dist/
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase
           mkdir -p dist
           find target/installer -name "*.deb" -o -name "*.rpm" | while read f; do
             cp "$f" dist/
           done
-          # Copy tarball to dist if present
-          if [ -d target/app-image ]; then
-            cp dist/*.tar.xz dist/ || true
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dist/
           git diff --staged --quiet \
-            || (git commit -m "chore: rebuild Linux installers [skip ci]" && git push)
+            || (git commit -m "chore: rebuild Linux installers [skip ci]" && git push origin main)
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
