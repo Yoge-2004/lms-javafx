@@ -381,7 +381,10 @@
         <profile>
             <id>installer-linux</id>
             <activation>
-                <os><family>unix</family></os>
+                <os>
+                    <family>unix</family>
+                    <name>linux</name>
+                </os>
                 <property><name>installer</name></property>
             </activation>
             <build>
@@ -511,7 +514,10 @@
         <profile>
             <id>installer-linux-tarball</id>
             <activation>
-                <os><family>unix</family></os>
+                <os>
+                    <family>unix</family>
+                    <name>linux</name>
+                </os>
                 <property><name>installer</name></property>
             </activation>
             <build>
