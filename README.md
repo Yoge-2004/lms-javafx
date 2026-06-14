@@ -344,7 +344,7 @@ Download the latest release from the [**GitHub Releases page**](https://github.c
 | Windows | [LibraryOS-3.4.0.exe](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/LibraryOS-3.4.0.exe) | Run the installer and follow the setup wizard. |
 | Debian/Ubuntu/Zorin | [libraryos_3.4.0_amd64.deb](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos_3.4.0_amd64.deb) | `sudo apt install ./libraryos_3.4.0_amd64.deb` |
 | Fedora/RHEL/CentOS | [libraryos-3.4.0-1.x86_64.rpm](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-1.x86_64.rpm) | `sudo dnf install ./libraryos-3.4.0-1.x86_64.rpm` |
-| Arch / any Linux | [libraryos-3.4.0-linux-x64.tar.xz](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-linux-x64.tar.xz) | Extract and open — see below. |
+| Arch / any Linux | [libraryos-3.4.0-linux-x64.tar.xz](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-linux-x64.tar.xz) <br> [libraryos-3.4.0-linux-x64.tar.gz](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/libraryos-3.4.0-linux-x64.tar.gz) | Extract and open — see below. |
 | macOS | [LibraryOS-3.4.0.dmg](https://github.com/Yoge-2004/lms-javafx/releases/download/v3.4.0/LibraryOS-3.4.0.dmg) | Mount the DMG and drag LibraryOS to your Applications folder. |
 
 After Linux installation via `.deb` or `.rpm`, launch from the application menu as `Library OS` or from a terminal:
@@ -355,12 +355,16 @@ libraryos
 
 ### Arch Linux and generic tarball
 
-For distributions that do not use `.deb` or `.rpm` (Arch, Manjaro, EndeavourOS, Alpine, Gentoo, etc.), use the `.tar.xz` bundle.
+For distributions that do not use `.deb` or `.rpm` (Arch, Manjaro, EndeavourOS, Alpine, Gentoo, etc.), use the `.tar.xz` or `.tar.gz` bundle.
 
 **Extraction:**
 
 ```bash
+# For .tar.xz
 tar -xf libraryos-3.4.0-linux-x64.tar.xz
+
+# For .tar.gz
+tar -xf libraryos-3.4.0-linux-x64.tar.gz
 ```
 
 **Running:**
@@ -454,13 +458,13 @@ The installer profile is selected by OS:
 - macOS: `.dmg`
 - Linux: `.deb` and `.rpm`
 
-Build the `.tar.xz` tarball for Arch / generic Linux:
+Build the `.tar.xz` and `.tar.gz` tarballs for Arch / generic Linux:
 
 ```bash
 ./mvnw clean install -Dinstaller -Pinstaller-linux-tarball -DskipTests
 ```
 
-This produces `dist/libraryos-3.4.0-linux-x64.tar.xz`, a self-contained app-image bundle with the launcher wrapper and icon binding script included.
+This produces `dist/libraryos-3.4.0-linux-x64.tar.xz` and `dist/libraryos-3.4.0-linux-x64.tar.gz`, self-contained app-image bundles with the launcher wrapper and icon binding script included.
 
 ## Configuration
 
@@ -580,7 +584,7 @@ src/main/packaging/
 
 The Linux installer profile prepares desktop integration resources, installs app icons, creates a `libraryos` command symlink, and updates desktop/icon caches through maintainer scripts.
 
-The `.tar.xz` tarball profile builds a jpackage app-image and bundles two additional scripts at the root:
+The tarball profile builds a jpackage app-image, creates both `.tar.xz` and `.tar.gz` archives, and bundles two additional scripts at the root:
 
 - `postextract.sh` — installs icons, a `.desktop` entry, and a `~/.local/bin/libraryos` symlink into the user's home directory without root access.
 - `libraryos` — a launcher wrapper that triggers `postextract.sh` on the first run, then delegates to `bin/LibraryOS`.
