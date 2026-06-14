@@ -38,8 +38,10 @@ jobs:
           # Temporarily move generated tarballs to target to keep dist/ clean for git pull
           mkdir -p target/temp-tarballs
           mv dist/*.tar.xz dist/*.tar.gz target/temp-tarballs/ 2>/dev/null || true
+          # Restore tracked dist/ files to clean git state to avoid unstaged deletion changes
+          git checkout -- dist/
           git pull origin main --rebase
-          # Restore the tarballs back to dist/
+          # Restore the newly built tarballs back to dist/
           mkdir -p dist
           mv target/temp-tarballs/* dist/ 2>/dev/null || true
           find target/installer -name "*.deb" -o -name "*.rpm" | while read f; do
